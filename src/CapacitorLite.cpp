@@ -32,9 +32,16 @@ CapacitorLite::CapacitorLite(int outPin, int inPin)
     _outPin = outPin;
     _inPin = inPin;
     digitalWrite(_outPin, LOW);
-    digitalWrite(_inPin, LOW);
     pinMode(_outPin, OUTPUT);
+
+#if defined(__AVR_ATtinyX5__)
+    digitalWrite(_inPin, LOW);
     pinMode(_inPin, OUTPUT);
+#else
+    digitalWrite(analogInputToDigitalPin(_inPin-A0), LOW);
+    pinMode(analogInputToDigitalPin(_inPin-A0), OUTPUT);
+#endif
+
     _showDebugMessages = false;
 }
 
@@ -66,9 +73,9 @@ unsigned int CapacitorLite::Measure()
     long capacitance;
 
 #if defined(__AVR_ATtinyX5__)
-        pinMode(analogInputToDigitalPin(_inPin-A0), INPUT);  // Convert AnalogPin to Digital for ATTinyX5 chips
+    pinMode(analogInputToDigitalPin(_inPin-A0), INPUT);  // Convert AnalogPin to Digital for ATTinyX5 chips
 #else
-        pinMode(_inPin, INPUT);                 // Rising high edge on OUT_PIN
+    pinMode(_inPin, INPUT);                 // Rising high edge on OUT_PIN
 #endif
     digitalWrite(_outPin, HIGH);
 
@@ -78,7 +85,7 @@ unsigned int CapacitorLite::Measure()
 #if defined(__AVR_ATtinyX5__)
     pinMode(analogInputToDigitalPin(_inPin-A0), OUTPUT);  // Convert AnalogPin to Digital for ATTinyX5 chips, Clear everything for next measurement
 #else
-    pinMode(_inPin, INPUT);                 // Rising high edge on OUT_PIN
+    pinMode(_inPin, OUTPUT);                  // Clear everything for next measurement
 #endif
 
     // Calculate result
